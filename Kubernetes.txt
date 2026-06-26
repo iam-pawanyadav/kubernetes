@@ -1,0 +1,114 @@
+Kubernetes commands Learned:
+
+1. kubectl get-resources
+
+It will list all the resources in the cluster which our api server knows how to manage them. You will also get if it is applicable to whole cluster or in the namespaces with the field as true or false.
+
+does not show what is currently running in your cluster. Instead, it shows what kinds of Kubernetes objects (resources) your Kubernetes API server knows how to manage.
+
+2. kubectl explain <resource-name> --recursive
+
+<resource-name> - it could be anything like pod, configmaps or whatever you want ot get all the details about it like what all fields are supported and everything.
+
+3. kubectl config view
+It shows how the kubectl is configured to connect to kubernetes. it has all the details about the current setting user information adn all.
+
+4. kubectl config current-context
+it shows the current user name and the cluster name by which we are interracting when we run the kubectl.
+
+yadavpawan.jiyalal@yadavpawan:~$ kubectl config current-context
+kubernetes-admin@yadavpawan.jiyalal
+
+yadavpawan.jiyalal is the local cluster name and the kubernetes-admin is the user which is used for interacting via kubectl
+
+5. kubectl config get-users
+to get all the users.
+
+6. kubectl config get-contexts
+to get all the clusters users so that we can switch between multi cluster environment.
+
+7. kubectl config use-context <context name to which we want to switch>
+
+8. kubectl run my-pod --image=nginx --port=80
+
+9. kubectl run dry-run-pod --image=nginx --port=80 --dry-run=client -o yaml > output-filename.yaml
+
+this will give the yaml based on dry run which can be used to create the resources.
+
+10. Rather than managing the pods alone it is always better to have replication controller which will work like a manager for the pods and always makes sure that the desired number of pods will always be running.
+
+11. kubectl get rc -o wide
+
+this will print the replication controller desired as well as current pods which are being managed byt the replication controller.
+
+12. kubectl scale rc <name-of-replication-controller> --replicas=<any-number-we-want>
+
+it will scale the pods based on the number of replica we will provode.
+
+13. Limitation of replication controller:
+> can manage pods based on labels only
+> rollingupdate and rollback features requires manual intervention
+-> doesnt support complex label selection or expressions for managing the pods.
+
+14. Why replica set is better:
+> supports both match labels and match expressions - so basically rather than just saying match with this label, you can also specify multiple key value pairs like IN , NotIN and Exist.
+> integrates seamelessly with the deployment enabling rolling update an rollback.
+
+15. replica set example
+
+yadavpawan.jiyalal@yadavpawan:~$ cat rs.yaml
+apiVersion: v1
+kind: ReplicaSet
+metadata:
+  name: rc-example #this is the name for the replica set
+spec:
+  replicas: 5
+  selector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - value1
+      - value2
+  template:
+    metadata:
+      labels:
+        app:wp
+    spec:
+      containers:
+      - name: my-name
+        image: nginx:latest
+
+
+16. deployment yaml
+
+yadavpawan.jiyalal@yadavpawan:~$ cat deployment-practice.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-deployment
+  template:
+    metadata:
+      labels:
+        env: test
+        app: web-deployment
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.26.2
+        ports:
+        - containerPort: 80
+
+
+
+
+17. kubectl scale deployment --replicas=6
+
+to scale the deployment by 6 replicas
+
+18. 
